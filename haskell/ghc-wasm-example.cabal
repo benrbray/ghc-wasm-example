@@ -10,9 +10,12 @@ common common
   default-language: GHC2021
   hs-source-dirs: src
   other-modules:
-    ForeignUtils
+    ForeignUtils,
+    StringWithLen
   build-depends:
-      base
+      base,
+      bytestring,
+      text
 
 -- haskell-language-server has trobule with the
 -- c-sources, so we include this stanza for development
@@ -34,5 +37,14 @@ executable ghc-wasm-example
     -no-hs-main
     -optl-mexec-model=reactor
     "-optl-Wl\
-    \,--export=fibonacci_hs\
+    -- memory management
+    \,--export=malloc\
+    \,--export=free\
+    -- StringWithLen datatype
+    \,--export=getString\
+    \,--export=getStringLen\
+    \,--export=freeStringWithLen\
+    -- main functionality
+    \,--export=runFibonacci\
+    \,--export=runToUpper\
     \"

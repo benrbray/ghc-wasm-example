@@ -2,10 +2,10 @@ type Tag<T extends string> = { tag: T };
 
 /* ---- request ----------------------------------------- */
 
-type WorkerRequest = AddOne | Plus
+type WorkerRequest = AddOne | ToUpper
 
-type AddOne = Tag<"addOne"> & { value: number };
-type Plus   = Tag<"plus">   & { a: number, b: number };
+type AddOne = Tag<"addOne">  & { value: number };
+type ToUpper= Tag<"toUpper"> & { value: string };
 
 /* ---- response ---------------------------------------- */
 

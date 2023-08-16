@@ -45,7 +45,9 @@ function initWorker() {
     }
   });
 
-  callWorker({ tag: "addOne", value: 5 });
+//  callWorker({ tag: "addOne", value: 5 });
+
+  callWorker({ tag: "toUpper", value: "benjamin" });
 }
 
 /** 
