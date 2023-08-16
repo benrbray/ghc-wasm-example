@@ -1,10 +1,7 @@
 cradle:
   cabal:
-    - path: "src"
-      component: "ghc-wasm-example-test:lib:default"
+    - path: "./"
+      component: "ghc-wasm-example:lib:default"
 
-    - path: "src/Main.hs"
-      component: "ghc-wasm-example-test:lib:default"
-
-    - path: "src/ForeignUtils.hs"
-      component: "ghc-wasm-example-test:lib:default"
+    - path: "./Main.hs"
+      component: "ghc-wasm-example:lib:default"

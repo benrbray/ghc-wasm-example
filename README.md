@@ -9,6 +9,7 @@ At the moment, the build is based mostly on Brandon Chinn's [`fourmolu-wasm`](ht
 
 * Haskell Discourse, ["Javascript & WebAssembly backend"](https://discourse.haskell.org/t/javascript-webassembly-backend/6787)
 * `ghc-wasm-meta` @ GitLab, Issue #1, ["Allow disabling `head.hackage` in `setup.sh`"](https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/issues/1) (and [this commit](https://github.com/fourmolu/fourmolu/pull/334/commits/0a186b1c60ce6a279b62794886ab7aea11ed65ae), [this workflow](https://github.com/fourmolu/fourmolu/blob/0a186b1c60ce6a279b62794886ab7aea11ed65ae/.github/workflows/web.yml))
+* ezyang 2011, ["Accessing lazy structures from C"](http://blog.ezyang.com/2011/12/accessing-lazy-structures-from/)
 
 ## Setup
 
