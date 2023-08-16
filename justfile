@@ -5,7 +5,7 @@ deps-wasm:
 
 build-wasm: deps-wasm
 	cd haskell && ./build.sh
-	cp ./haskell/build/haskell-wasm.wasm ./frontend/public/main.wasm
+	cp ./haskell/build/ghc-wasm-example.wasm ./frontend/public/main.wasm
 
 dev: build-wasm
 	npm run dev

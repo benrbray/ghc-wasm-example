@@ -21,11 +21,11 @@ listbin() {
 
 # can't do cabal install because it'll build fourmolu too
 # https://github.com/haskell/cabal/issues/8614
-wasm32-wasi-cabal v2-build exe:haskell-wasm "${ARGS[@]}"
+wasm32-wasi-cabal v2-build exe:ghc-wasm-example "${ARGS[@]}"
 
 mkdir -p "${HERE}/build/"
 
 # pre-initialize wasm
 wizer \
     --allow-wasi --wasm-bulk-memory true \
-    "$(listbin haskell-wasm)" -o "${HERE}/build/haskell-wasm.wasm"
+    "$(listbin ghc-wasm-example)" -o "${HERE}/build/ghc-wasm-example.wasm"

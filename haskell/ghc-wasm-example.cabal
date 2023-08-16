@@ -3,7 +3,7 @@ cabal-version: 3.8
 -- adapted from fourmolu
 -- https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/fourmolu-wasm/fourmolu-wasm.cabal
 
-name: haskell-wasm-test
+name: ghc-wasm-example
 version: 0
 
 common common
@@ -16,7 +16,7 @@ common common
 
 -- haskell-language-server has trobule with the
 -- c-sources, so we include this stanza for development
-library haskell-default
+library default
   import: common
   main-is: Main.hs
   ghc-options:
@@ -24,7 +24,7 @@ library haskell-default
     -Wunused-packages
 
 -- used when building the wasm file
-executable haskell-wasm
+executable ghc-wasm-example
   import: common
   main-is: Main.hs
   c-sources: cbits/init.c
