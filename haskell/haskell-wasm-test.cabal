@@ -1,0 +1,38 @@
+cabal-version: 3.8
+
+-- adapted from fourmolu
+-- https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/fourmolu-wasm/fourmolu-wasm.cabal
+
+name: haskell-wasm-test
+version: 0
+
+common common
+  default-language: GHC2021
+  hs-source-dirs: src
+  other-modules:
+    ForeignUtils
+  build-depends:
+      base
+
+-- haskell-language-server has trobule with the
+-- c-sources, so we include this stanza for development
+library haskell-default
+  import: common
+  main-is: Main.hs
+  ghc-options:
+    -Wall
+    -Wunused-packages
+
+-- used when building the wasm file
+executable haskell-wasm
+  import: common
+  main-is: Main.hs
+  c-sources: cbits/init.c
+  ghc-options:
+    -Wall
+    -Wunused-packages
+    -no-hs-main
+    -optl-mexec-model=reactor
+    "-optl-Wl\
+    \,--export=fibonacci_hs\
+    \"

@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "haskell-wasm-test:lib:haskell-default"
+
+    - path: "src/Main.hs"
+      component: "haskell-wasm-test:lib:haskell-default"
+
+    - path: "src/ForeignUtils.hs"
+      component: "haskell-wasm-test:lib:haskell-default"
