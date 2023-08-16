@@ -2,21 +2,17 @@
 // https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/worker/index.js
 
 import { Fd, WASI } from '@bjorn3/browser_wasi_shim'
+import "./workerApi";
 
 type WasmApi = {
 	fibonacci_hs(n: number): number;
 }
 
+function debug(...args: unknown[]) {
+	console.log(`%c[worker]`, "color: green", ...args);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-
-onmessage = (e) => {
-	console.log("Message received from main script", e.data);
-
-	const workerResult = `Result: ${e.data[0] * e.data[1]}`;
-
-	console.log("Posting message back to main script");
-	postMessage(workerResult);
-};
 
 async function main() {
 	const wasmPath = "/public/main.wasm";
@@ -24,6 +20,44 @@ async function main() {
 	const hs = wasm.instance.exports as WasmApi;
 
 	console.log(hs.fibonacci_hs(500));
+
+	onmessage = (evt) => {
+		const request = evt.data as WorkerRequest;
+
+		debug("received request from main", request);
+
+		if(request.tag === "addOne") {
+			const result = hs.fibonacci_hs(request.value);
+			debug(`result = ${result}`);
+
+			respondSuccess();
+			return;
+		} else {
+			respondUnknown();
+		}
+	};
+
+	// send initial message indicating worker is ready
+	respondReady();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function respond(response: WorkerResponse): void {
+	debug("posting response", response);
+	postMessage(response);
+}
+
+function respondSuccess(): void {
+	respond({ tag: "workerSuccess" });
+}
+
+function respondReady(): void {
+	respond({ tag: "workerReady" });
+}
+
+function respondUnknown(): void {
+	respond({ tag: "workerUnknownRequest" });
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,43 +11,53 @@ const root = document.getElementById('root')
 
 const App = function () {
   return <div>
-    <button onClick={() => postMessage("BUTTON!")}>Post Message</button>
+    <button onClick={() => callWorker({ tag: "addOne", value: 5 })}>Post Message</button>
   </div>
 }
 
 window.onload = function() {
-  render(() => <App />, root!)
-}
+  initWorker();
 
-// let wasmPath = "/public/haskell.wasm"
+  render(() => <App />, root!);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// async function initWebAssembly(source: Promise<Response>) {
-//   const wasi = new WASI([], [], [])
-//   const wasm = await WebAssembly.instantiateStreaming(source, {
-//     wasi_snapshot_preview1: wasi.wasiImport,
-//   })
-//   wasi.inst = wasm.instance as any
-//   return wasm
-// }
+let _worker: Worker;
+let _currentRequest: Promise<WorkerResponse>;
 
-// const wasm = await initWebAssembly(fetch(wasmPath))
-// const hs = wasm.instance.exports
+function initWorker() {
+  _worker = new Worker(WasmWorker, { type: "module" });
 
-// console.log(wasm);
-// console.log(hs);
-// console.log((hs as any).fibonacci_hs(500));
+  _currentRequest = new Promise((resolve) => {
+    // wait for initial message indicating worker is ready
+    _worker.onmessage = (evt) => {
+      const response = evt.data as WorkerResponse;
+      if(response.tag !== "workerReady") { return; }
 
-////////////////////////////////////////////////////////////////////////////////
+      console.log("worker is ready");
 
-const myWorker = new Worker(WasmWorker, { type: "module" });
+      // start allowing requests
+      resolve(response);
+    }
+  });
 
-function postMessage(message: string) {
-  myWorker.postMessage(message);
-  console.log("Message posted to worker");
+  callWorker({ tag: "addOne", value: 5 });
 }
 
-myWorker.onmessage = (ev) => {
-  console.log("message received from worker", ev);
+/** All calls to the web worker should be made through `callWorker`,
+  * which chains requests as promises to ensure synchronous access.
+  */
+function callWorker(message: WorkerRequest): Promise<WorkerResponse> {
+  const promise: Promise<WorkerResponse> =
+    _currentRequest.then(() =>
+      new Promise((resolve) => {
+        console.log("[main] sending request to worker", message);
+        _worker.postMessage(message);
+        _worker.onmessage = (event) => resolve(event.data);
+      })
+    );
+
+  _currentRequest = promise;
+  return promise;
 }
