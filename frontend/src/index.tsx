@@ -1,11 +1,10 @@
 /* @refresh reload */
 import { render } from 'solid-js/web'
-
-// import { WASI, File, OpenFile, PreopenDirectory } from "@bjorn3/browser_wasi_shim";
-
 import WasmWorker from "./worker/worker?url"
 
 import './index.css'
+
+////////////////////////////////////////////////////////////////////////////////
 
 const root = document.getElementById('root')
 
@@ -26,6 +25,10 @@ window.onload = function() {
 let _worker: Worker;
 let _currentRequest: Promise<WorkerResponse>;
 
+/**
+ * Communication with the web worker is based on `fourmolu-wasm` by Brandon Chinn.
+ * https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/site/static/demo.js
+ */
 function initWorker() {
   _worker = new Worker(WasmWorker, { type: "module" });
 
@@ -45,7 +48,8 @@ function initWorker() {
   callWorker({ tag: "addOne", value: 5 });
 }
 
-/** All calls to the web worker should be made through `callWorker`,
+/** 
+  * All calls to the web worker should be made through `callWorker`,
   * which chains requests as promises to ensure synchronous access.
   */
 function callWorker(message: WorkerRequest): Promise<WorkerResponse> {
