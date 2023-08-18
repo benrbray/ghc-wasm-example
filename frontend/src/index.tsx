@@ -3,22 +3,7 @@ import { render } from 'solid-js/web'
 import WasmWorker from "./worker/worker?url"
 
 import './index.css'
-
-////////////////////////////////////////////////////////////////////////////////
-
-const root = document.getElementById('root')
-
-const App = function () {
-  return <div>
-    <button onClick={() => callWorker({ tag: "addOne", value: 5 })}>Post Message</button>
-  </div>
-}
-
-window.onload = function() {
-  initWorker();
-
-  render(() => <App />, root!);
-}
+import { createSignal } from 'solid-js';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,10 +29,6 @@ function initWorker() {
       resolve(response);
     }
   });
-
-//  callWorker({ tag: "addOne", value: 5 });
-
-  callWorker({ tag: "toUpper", value: "benjamin" });
 }
 
 /** 
@@ -66,4 +47,60 @@ function callWorker(message: WorkerRequest): Promise<WorkerResponse> {
 
   _currentRequest = promise;
   return promise;
+}
+
+const workerApi = {
+  async toUpper(s: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      const result = await callWorker({ tag: "toUpper", value: s });
+
+      if(result.tag === "workerToUpperResult") {
+        resolve(result.result);
+      } else {
+        reject();
+      }
+    });
+  },
+
+  async runParse(s: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      const result = await callWorker({ tag: "runParse", data: { inputText: s } });
+
+      if(result.tag === "workerParseResult") {
+        resolve(result.outputExpr || result.outputError || "missing data");
+      } else {
+        reject();
+      }
+    });
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const root = document.getElementById('root')
+
+const App = function () {
+  const [userText, setUserText] = createSignal<string>("");
+  const [resultText, setResultText] = createSignal<string>("");
+
+  const handleClick = async () => {
+    const result = await workerApi.runParse(userText());
+    setResultText(JSON.stringify(result, undefined, 2));
+  }
+
+  return (<div class="demo">
+    <div class="top">
+      <textarea class="userTextInput" onChange={(evt) => {setUserText(evt.target.value)}} value={userText()} />
+      <button onClick={handleClick}>Post Message</button>
+    </div>
+    <div class="bottom">
+      <pre class="resultText"><code>{resultText()}</code></pre>
+    </div>
+  </div>);
+}
+
+window.onload = function() {
+  initWorker();
+
+  render(() => <App />, root!);
 }

@@ -1,7 +1,7 @@
 // based on fourmolu-wasm by Brandon Chinn
 // https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/worker/index.js
 
-import { Fd, WASI } from '@bjorn3/browser_wasi_shim';
+import { Fd, OpenFile, WASI, File } from '@bjorn3/browser_wasi_shim';
 import "./workerApi";
 
 type Ptr = number;
@@ -14,6 +14,7 @@ type WasmApi = {
 	freeStringWithLen(ptr: Ptr): void; //
 	runFibonacci(n: number): number;
 	runToUpper(ptr: Ptr, len: number): Ptr;
+	runParse(ptr: Ptr, len: number): Ptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,14 +27,21 @@ console.log = function(...args: unknown[]) {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
+const stdin  = new OpenFile(new File([]));
+const stdout = new OpenFile(new File([]));
+const stderr = new OpenFile(new File([]));
+
 ////////////////////////////////////////////////////////////////////////////////
 
 type Haskell = WasmApi & WebAssembly.Exports & { memory: WebAssembly.Memory };
 
+/**
+ * Encodes a JavaScript `Uint8Array` as a Haskell `StringWithLen`.
+ */
 const withBytesPtr = (
 	haskell: Haskell,
 	bytes: Uint8Array,
-	callback: (inputPtr: number, inputLen: number) => void
+	callback: (inputPtr: Ptr, inputLen: number) => void
 ) => {
 	const len = bytes.byteLength
 	const ptr = haskell.malloc(len)
@@ -64,9 +72,10 @@ async function main() {
 			console.log(`result = ${result}`);
 
 			respondSuccess();
-			return;
 		} else if(request.tag === "toUpper") {
 			runToUpper(haskell, request);
+		} else if(request.tag === "runParse") {
+			runParse(haskell, request);
 		} else {
 			respondUnknown();
 		}
@@ -94,14 +103,46 @@ function runToUpper(
 	request: ToUpper
 ) {
 	const inputBytes = encoder.encode(request.value);
+	let result: null | string = null;
 
 	withBytesPtr(haskell, inputBytes, (inputPtr, inputLen) => {
 		const resultPtr = haskell.runToUpper(inputPtr, inputLen);
 		const resultStr = decodeStringWithLen(haskell, resultPtr);
 		console.log(`result: ${resultStr}`);
+		result = resultStr;
 	});
 
-	respondSuccess();
+	if(result !== null) {
+		respond({ tag: "workerToUpperResult", result });
+	} else {
+		respondFailure();
+	}
+
+	return;
+}
+
+function runParse(
+	haskell: Haskell,
+	request: Parse
+) {
+	const inputBytes = encoder.encode(JSON.stringify(request.data));
+	let resultJson: string|null = null;
+
+	withBytesPtr(haskell, inputBytes, (inputPtr, inputLen) => {
+		const resultPtr = haskell.runParse(inputPtr, inputLen);
+		const resultStr = decodeStringWithLen(haskell, resultPtr);
+		console.log(`result: ${resultStr}`);
+		resultJson = resultStr;
+	});
+
+
+	if(resultJson !== null) {
+		const { outputExpr, outputError } = JSON.parse(resultJson) as WorkerParseResult;
+		respond({ tag: "workerParseResult", outputExpr, outputError });
+	} else {
+		respondFailure();
+	}
+
 	return;
 }
 
@@ -112,24 +153,18 @@ function respond(response: WorkerResponse): void {
 	postMessage(response);
 }
 
-function respondSuccess(): void {
-	respond({ tag: "workerSuccess" });
-}
-
-function respondReady(): void {
-	respond({ tag: "workerReady" });
-}
-
-function respondUnknown(): void {
-	respond({ tag: "workerUnknownRequest" });
-}
+function respondSuccess(): void { respond({ tag: "workerSuccess" });        }
+function respondReady(): void   { respond({ tag: "workerReady" });          }
+function respondUnknown(): void { respond({ tag: "workerUnknownRequest" }); }
+function respondFailure(): void { respond({ tag: "workerFailure" });        }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 async function initWebAssembly(source: Promise<Response>) {
 	const args: string[] = [];
 	const env: string[]  = [];
-	const fds: Fd[]      = [];
+	const fds: Fd[] = [stdin, stdout, stderr];
+	
 	const wasi = new WASI(args, env, fds);
 
 	const wasm = await WebAssembly.instantiateStreaming(source, {

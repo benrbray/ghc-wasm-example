@@ -1,4 +1,4 @@
-cabal-version: 3.8
+cabal-version: 3.0
 
 -- adapted from fourmolu
 -- https://github.com/fourmolu/fourmolu/blob/8aa2200fb38345d624d9682a051682094017bf8e/web/fourmolu-wasm/fourmolu-wasm.cabal
@@ -11,11 +11,24 @@ common common
   hs-source-dirs: src
   other-modules:
     ForeignUtils,
-    StringWithLen
+    StringWithLen,
+    Actions.Parse,
+    Syntax.Expr,
+    Syntax.Program,
+    Parse.Expr,
+    Parse.Keyword,
+    Parse.Parser
+  default-extensions:
+    OverloadedStrings,
+    DerivingStrategies,
+    DeriveAnyClass
   build-depends:
-      base,
-      bytestring,
-      text
+    base,
+    bytestring,
+    text,
+    aeson,
+    megaparsec,
+    parser-combinators
 
 -- haskell-language-server has trobule with the
 -- c-sources, so we include this stanza for development
@@ -47,4 +60,5 @@ executable ghc-wasm-example
     -- main functionality
     \,--export=runFibonacci\
     \,--export=runToUpper\
+    \,--export=runParse\
     \"

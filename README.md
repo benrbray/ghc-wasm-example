@@ -13,16 +13,20 @@ At the moment, the build is based mostly on Brandon Chinn's [`fourmolu-wasm`](ht
 
 ## Setup
 
-Install `ghc-wasm-meta` according to the ["Getting Started without Nix"](https://gitlab.haskell.org/ghc/ghc-wasm-meta#getting-started-without-nix).  I used all of the default settings.  Then, populate your environment with `source ~/.ghc-wasm/env`.
+Install `ghc-wasm-meta` according to the ["Getting Started without Nix"](https://gitlab.haskell.org/ghc/ghc-wasm-meta#getting-started-without-nix).  I am using `FLAVOUR=9.8`.  Then, populate your environment with `source ~/.ghc-wasm/env`.
 
 ```bash
+$ wasm32-wasi-ghc --version
+The Glorious Glasgow Haskell Compilation System, version 9.8.0.20230809
+
 $ wasm32-wasi-cabal --version
 cabal-install version 3.10.1.0
 compiled using version 3.10.1.0 of the Cabal library
-
-$ wasm32-wasi-ghc --version
-The Glorious Glasgow Haskell Compilation System, version 9.9.20230810
 ```
+
+Next, follow the instructions to set up `head.hackage`, which allows Hackage packages to be used with GHC prereleases (such as `ghc-wasm`).
+
+## Build
 
 The build scripts are organized as a [`justfile`](https://github.com/casey/just).
 
