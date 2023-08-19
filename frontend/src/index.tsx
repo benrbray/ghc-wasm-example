@@ -91,7 +91,9 @@ const App = function () {
   return (<div class="demo">
     <div class="top">
       <textarea class="userTextInput" onChange={(evt) => {setUserText(evt.target.value)}} value={userText()} />
-      <button onClick={handleClick}>Post Message</button>
+    </div>
+    <div class="controls">
+      <button class="btn" onClick={handleClick}>Parse</button>
     </div>
     <div class="bottom">
       <pre class="resultText"><code>{resultText()}</code></pre>
