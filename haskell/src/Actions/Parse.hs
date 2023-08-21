@@ -7,7 +7,6 @@ module Actions.Parse where
 import Data.Aeson
 import GHC.Generics
 import Data.Text (Text)
-import Data.Text qualified as T
 
 -- megaparsec, parser-combinators
 import Parse.Expr (parse, ParseResult (..))

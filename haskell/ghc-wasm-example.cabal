@@ -27,8 +27,7 @@ common common
     bytestring,
     text,
     aeson,
-    megaparsec,
-    parser-combinators
+    megaparsec
 
 -- haskell-language-server has trobule with the
 -- c-sources, so we include this stanza for development
